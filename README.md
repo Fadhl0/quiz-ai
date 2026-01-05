@@ -1,4 +1,4 @@
-# Quiz AI-Powered Web application
+# 📚 Quiz AI-Powered Web application
 A lightweight web application that lets you upload document containing Multiple-Choice Questions (MCQs) to test yourself. The app uses a local LLM (Large Language Model) to parse your document and power the interactive quiz.
 
 ## Snapshot
@@ -45,7 +45,7 @@ For example:
 
 #### To run the project:
 
-1. Clone the Repository
+1. Clone the Repository (LLM size is ~900MB may take a long time to download)
 ```bash
 git clone https://github.com/fadhl0/quiz-ai.git
 cd quiz-ai
