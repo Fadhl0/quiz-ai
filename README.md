@@ -47,7 +47,7 @@ For example:
 
 1. Clone the Repository (LLM size is ~900MB may take a long time to download)
 ```bash
-git clone https://github.com/fadhl0/quiz-ai.git
+git clone https://github.com/Fadhl0/quiz-ai.git
 cd quiz-ai
 cd quiz_flask
 ```
