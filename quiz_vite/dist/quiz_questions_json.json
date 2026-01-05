@@ -1,0 +1,20 @@
+[
+  {
+    "question": "Who made this website?",
+    "answers": {
+      "1": "me (You)",
+      "2": "Me (the developer)",
+      "3": "Fadhl (me)",
+      "4": "AI Model"
+    },
+    "correct": "3"
+  },
+  {
+    "question": "Ready to upload a file with multiple-choice questions (including choices and the correct answers) to automatically create a quiz? The button is above right there",
+    "answers": {
+      "1": "Yes",
+      "2": "No"
+    },
+    "correct": "1"
+  }
+]
