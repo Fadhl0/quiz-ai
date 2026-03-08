@@ -1,3 +1,5 @@
+import throwError from "./errorHandle";
+
 const filePathToFlask = document.getElementById("file");
 const loading = document.querySelector(".mother-of-loading");
 const dialog_window = document.querySelector("dialog");
@@ -33,17 +35,30 @@ filePathToFlask.addEventListener("change", async () => {
   formData.append("file", file);
 
   try {
-    const res = await fetch("/upload", {
+    const fileExtansion = file.name.toLowerCase();
+    if (!fileExtansion.endsWith(".docx") && !fileExtansion.endsWith(".txt")) {
+      throwError(502);
+      return;
+    }
+
+    const res = await fetch("/api/upload", {
       method: "POST",
       body: formData
     });
 
-    if (!res.ok) throw new Error("Upload failed");
+    if (!res.ok) {
+      throwError(500);
+      throw new Error("Upload failed");
+    }
 
     const data = await res.json();
-    console.log("Uploaded:", data);
+    if (!data.content || data.content.length === 0) {
+      throwError(501);
+      return
+    };
+
+    // indexedDB
     if(data.content) {
-      // indexedDB
       const db = await openDB();
 
       const tx = db.transaction(STORE_NAME, "readwrite");
@@ -71,7 +86,8 @@ filePathToFlask.addEventListener("change", async () => {
       // --------
     }
   } catch (err) {
-    console.error("openDB error (callFlask):", err);
+    throwError(500);
+    console.error("(callFlask): ", err);
   } finally {
     loading.style.display = "none";
 
