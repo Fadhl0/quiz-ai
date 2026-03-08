@@ -1,7 +1,7 @@
 // history sidebar:
-let history = document.querySelector(".history");
-let sidebar_hide = document.querySelector(".sidebar-icon");
-let sidebar_show = document.querySelector(".sidebar-show");
+const history = document.querySelector(".history");
+const sidebar_hide = document.querySelector(".sidebar-icon");
+const sidebar_show = document.querySelector(".sidebar-show");
 const globalMenu = document.getElementById("global-menu");
 
 document.addEventListener('click', e => {
@@ -88,12 +88,13 @@ function renderList(items) {
   const pinnedItems = items.filter(item => item.pin === true);
   const recentItems = items.filter(item => !item.pin);
 
+  const title = (item) => escapeHtml(JSON.parse(item.text)[0]["question"]);
   const createItemHTML = (item) => `
     <div class="item" data-id="${item.id}">
-      <div class="item-text">${escapeHtml(JSON.parse(item.text)[0]["question"])}</div>
+      <div class="item-text" title="${title(item)}">${title(item)}</div>
       <div class="parent_dot">
         <div class="item-svg">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4.5514 8C4.5514 8.63513 4.03653 9.15 3.4014 9.15C2.76628 9.15 2.2514 8.63513 2.2514 8C2.2514 7.36487 2.76628 6.85 3.4014 6.85C4.03653 6.85 4.5514 7.36487 4.5514 8Z" fill="#000"></path><path d="M9.14754 8C9.14754 8.63513 8.63267 9.15 7.99754 9.15C7.36242 9.15 6.84754 8.63513 6.84754 8C6.84754 7.36487 7.36242 6.85 7.99754 6.85C8.63267 6.85 9.14754 7.36487 9.14754 8Z" fill="#000"></path><path d="M13.7486 8C13.7486 8.63513 13.2337 9.15 12.5986 9.15C11.9634 9.15 11.4486 8.63513 11.4486 8C11.4486 7.36487 11.9634 6.85 12.5986 6.85C13.2337 6.85 13.7486 7.36487 13.7486 8Z" fill="#000"></path></svg>
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4.5514 8C4.5514 8.63513 4.03653 9.15 3.4014 9.15C2.76628 9.15 2.2514 8.63513 2.2514 8C2.2514 7.36487 2.76628 6.85 3.4014 6.85C4.03653 6.85 4.5514 7.36487 4.5514 8Z" fill="currentColor"></path><path d="M9.14754 8C9.14754 8.63513 8.63267 9.15 7.99754 9.15C7.36242 9.15 6.84754 8.63513 6.84754 8C6.84754 7.36487 7.36242 6.85 7.99754 6.85C8.63267 6.85 9.14754 7.36487 9.14754 8Z" fill="currentColor"></path><path d="M13.7486 8C13.7486 8.63513 13.2337 9.15 12.5986 9.15C11.9634 9.15 11.4486 8.63513 11.4486 8C11.4486 7.36487 11.9634 6.85 12.5986 6.85C13.2337 6.85 13.7486 7.36487 13.7486 8Z" fill="currentColor"></path></svg>
         </div>
       </div>
     </div>
@@ -166,7 +167,7 @@ history.addEventListener("click", async (e) => {
   }
 });
 
-// menu options (delete/pin)
+// menu options (delete/pin/download)
 globalMenu.addEventListener("click", (e) => {
     if(e.target.id === "menu-delete-btn") {
       deleteItem(currentTargetId)
@@ -180,24 +181,6 @@ globalMenu.addEventListener("click", (e) => {
     // Close menu
     globalMenu.classList.remove("active");
 });
-
-
-// function deleteItem(id) {
-//   const request = indexedDB.open(DB_NAME, DB_VERSION);
-
-//   request.onsuccess = (e) => {
-//     const db = e.target.result;
-//     const transaction = db.transaction(STORE_NAME, "readwrite");
-//     const store = transaction.objectStore(STORE_NAME);
-
-//     const deleteRequest = store.delete(Number(id));
-
-//     deleteRequest.onsuccess = () => {
-//       console.log(`Item ${id} has been deleted`);
-//       displayData(); // auto refresh history
-//     };
-//   };
-// }
 
 function deleteItem(id) {
   openDB().then(db => {
@@ -242,38 +225,9 @@ const stored = ${safeJson};stored&&proccess(JSON.parse(stored));
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
-      console.log("downloaded ✔")
     })
     .catch((e) => console.error(e));
 }
-
-// function togglePin(id) {
-//   const request = indexedDB.open(DB_NAME, DB_VERSION);
-
-//   request.onsuccess = (e) => {
-//     const db = e.target.result;
-//     const transaction = db.transaction(STORE_NAME, "readwrite");
-//     const store = transaction.objectStore(STORE_NAME);
-
-//     const getRequest = store.get(Number(id));
-
-//     getRequest.onsuccess = () => {
-//       const data = getRequest.result;
-
-//       if (data) {
-//         data.pin = !data.pin;
-//         const updateRequest = store.put(data);
-
-//         updateRequest.onsuccess = () => {
-//           console.log("Pin updated...");
-//           displayData();
-//         };
-//       } else {
-//         console.error("There is no db with this id!!!!");
-//       }
-//     };
-//   };
-// }
 
 function togglePin(id) {
   openDB().then(db => {

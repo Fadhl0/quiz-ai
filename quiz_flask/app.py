@@ -1,14 +1,13 @@
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 import os
-from docx import Document
 from werkzeug.utils import secure_filename
+import docx_parser
 import re
 import LLM
 import json
 import webbrowser
 from threading import Timer
-
 
 app = Flask(__name__, static_folder='../quiz_vite/dist', static_url_path='')
 cors = CORS(app)
@@ -105,21 +104,8 @@ SYS_PROMPT = "\n".join([
   ""
 ])
 
-@app.route('/')
-def serve():
-  return send_from_directory(app.static_folder, 'index.html')
-
-@app.route('/<path:path>')
-def static_proxy(path):
-  file_path = os.path.join(app.static_folder, path)
-  if os.path.exists(file_path):
-    return send_from_directory(app.static_folder, path)
-  else:
-    return send_from_directory(app.static_folder, 'index.html')
-
-@app.route("/upload", methods=["POST"])
+@app.route("/api/upload", methods=["POST"])
 def upload():
-  text = []
   all_text = ""
   if "file" not in request.files:
     return jsonify(success=False, error="no file part"), 400
@@ -136,60 +122,8 @@ def upload():
     with open(save_path, "r", encoding="utf-8") as f:
       all_text = f.read().strip()
 
-
   elif filename.lower().endswith(".docx"):
-    docx = Document(save_path)
-    for para in docx.paragraphs:
-      para_text = []
-      curr_format = None
-      curr_text = []
-
-      for run in para.runs:
-        if run.font.highlight_color is not None:
-          format_type = "highlight"
-        elif run.font.bold:
-          format_type = "bold"
-        elif run.font.color and run.font.color.rgb:
-          format_type = "color"
-        elif run.font.underline:
-          format_type = "underline"
-        else:
-          format_type = "normal"
-
-        if curr_format != format_type:
-          if curr_text:
-            combined = "".join(curr_text)
-            if curr_format == "highlight":
-              para_text.append(f"[highlight]{combined}[/highlight]")
-            elif curr_format == "bold":
-              para_text.append(f"**{combined}**")
-            elif curr_format == "color":
-              para_text.append(f"[colored]{combined}[/colored]")
-            elif curr_format == "underline":
-              para_text.append(f"[underline]{combined}[/underline]")
-            else:
-              para_text.append(combined)
-            curr_text = []
-          curr_format = format_type
-        
-        curr_text.append(run.text)
-
-      #remaining text
-      if curr_text:
-        combined = "".join(curr_text)
-        if curr_format == "highlight":
-          para_text.append(f"[highlight]{combined}[/highlight]")
-        elif curr_format == "bold":
-          para_text.append(f"**{combined}**")
-        elif curr_format == "color":
-          para_text.append(f"[colored]{combined}[/colored]")
-        elif curr_format == "underline":
-          para_text.append(f"[underline]{combined}[/underline]")
-        else:
-          para_text.append(combined)
-
-      text.append("".join(para_text))
-    all_text = "\n".join(text)
+    all_text = docx_parser.parse(save_path)
 
   try:
     os.remove(save_path)
@@ -200,6 +134,8 @@ def upload():
   if all_text != None:
     all_text = [mcq for mcq in all_text if mcq]
 
+  json_output = []
+
   if file and len(all_text) != 0:
     result = LLM.generate_resp(all_text, SYS_PROMPT)
     if result:
@@ -208,12 +144,27 @@ def upload():
       print("No valid questions parsed")
 
   print(json_output)
-  return jsonify(success=True, content=json.loads(json_output))
+  if json_output:
+    return jsonify(success=True, content=json.loads(json_output))
+  else:
+    return jsonify(success=True, content="")
+
+@app.route('/<path:path>')
+def static_proxy(path):
+  file_path = os.path.join(app.static_folder, path)
+  if os.path.exists(file_path):
+    return send_from_directory(app.static_folder, path)
+  return send_from_directory(app.static_folder, 'index.html')
+
+@app.route('/')
+def serve():
+  return send_from_directory(app.static_folder, 'index.html')
 
 def open_browser():
   webbrowser.open("http://127.0.0.1:8412")
 
 if __name__ == "__main__":
-  Timer(1, open_browser).start()
-  app.run(debug=True, use_reloader=False, port=8412)
+  if not os.environ.get("WERKZEUG_RUN_MAIN"):
+    Timer(1.5, open_browser).start()
+  app.run(debug=True, port=8412)
 

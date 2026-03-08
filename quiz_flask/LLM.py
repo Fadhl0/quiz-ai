@@ -1,15 +1,16 @@
+import multiprocessing
 import json_repair
 from llama_cpp import Llama
 import gc
 import os
-
+import json_schema
+import json
 
 def parse_json(text):
   try:
     return json_repair.loads(text)
   except:
     return None
-
 
 def dynamic_tokens(llm, msgs, sm=128):
   im_start = llm.tokenize(b"<|im_start|>")
@@ -41,20 +42,44 @@ def dynamic_tokens(llm, msgs, sm=128):
 
   return max_tokens
 
+def load_model():
+  format = "qwen"
+  try:
+    with open("settings.json", "r", encoding="utf-8") as gpu:
+      data = json.load(gpu)
 
-def generate_resp(MCQList, SYS_PROMPT):
-  model = "quiz_parser_q4.gguf"
+    if data:
+      gpu = data["GPU"]
+      model = "Qwen2.5-1.5B-Instruct.F16.gguf" if data["type"] == "f16" else "Qwen2.5-1.5B-Instruct.Q4_K_M.gguf"
+  except:
+    model = "Qwen2.5-1.5B-Instruct.Q4_K_M.gguf"
+
   UPLOAD_FOLDER = os.path.abspath("../LLM")
   path = os.path.join(UPLOAD_FOLDER, model)
+
+  if gpu == "0":
+    cores = multiprocessing.cpu_count()
+    if cores >= 4:
+      cores = int(cores / 2)
+    return Llama(
+      model_path=path,
+      n_ctx=2048,
+      n_threads=cores,
+      chat_format=format
+    )
+  elif gpu == "1":
+    return Llama(
+      model_path=path,
+      n_ctx=2048,
+      n_gpu_layers=-1,
+      chat_format=format
+    )
+
+def generate_resp(MCQList, SYS_PROMPT):
   MCQ = []
   llm = None
   try:
-    llm = Llama(
-      model_path=path,
-      n_ctx=4096,
-      n_threads=4,
-      chat_format="qwen"
-    )
+    llm = load_model()
 
     for msg in MCQList:
       try:
@@ -85,7 +110,7 @@ def generate_resp(MCQList, SYS_PROMPT):
         print(f"Error processing question: {e}")
         continue
 
-    return MCQ
+    return json_schema.dict_manipulate(MCQ)
   except Exception as e:
     print(f"Error in LLM call: {e}")
     return []
