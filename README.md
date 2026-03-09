@@ -2,7 +2,9 @@
 A lightweight web application that lets you upload document containing Multiple-Choice Questions (MCQs) to test yourself. The app uses a local LLM (Large Language Model) to parse your document and power the interactive quiz.
 
 ## Snapshot
-https://github.com/user-attachments/assets/11d11867-435a-40c1-9871-1bf3f97a6cbd
+
+https://github.com/user-attachments/assets/a4ef3816-f859-40b2-8ad8-a8e7da1e3203
+
 
 **Features:**
 *   Upload `.docx` or `.txt` files with MCQs.
