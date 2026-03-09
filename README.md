@@ -19,7 +19,7 @@ https://github.com/user-attachments/assets/11d11867-435a-40c1-9871-1bf3f97a6cbd
 For the AI to parse your questions accurately, **you must separate each MCQ with a blank line.** This prevents "hallucination" and ensures stable operation.
 For example:
 
-- **Bad Format Example:** doesn't separate between each MCQs as well as has blank lines between options (not working)
+- **Bad Format Example:** doesn't separate individual MCQs as well as has blank lines between options (not working)
 
 <div align="center">
   <img src="https://i.imgur.com/KB6Ne00.png"  alt="Bad document.">
@@ -40,106 +40,80 @@ For example:
 * Python 3.10+
 * C compiler (required for `llama-cpp-python`)
     * **Linux:** `gcc` or `clang`
-    * **Windows:** Visual Studio (see detailed instructions below)
-    * **macOS:** `Xcode Command Line Tools`
+    * **Windows:** If you download the project from the release tab, you don't need a C compiler.
 
 #### To run the project:
 
-1. Clone the Repository (LLM size is ~900MB may take a long time to download)
-```bash
-git clone https://github.com/Fadhl0/quiz-ai.git
-cd quiz-ai
-cd quiz_flask
-```
+Navigate to the **Release** tab and download the version for your operating system.
 
-Then run these commands based on your operating system
+For example: if **Linux** download `quiz_linux.tar.gz`, if **Windows** download `Quiz_windows.zip`.
+
 <details>
-<summary>Linux/macOS</summary>
-
-3. Create a Virtual Environment
-
+<summary>Linux</summary>
+  
+1. Unzip the file:
+   
 ```bash
-python3 -m venv venv
-source venv/bin/activate
+tar -xf quiz_linux.tar.gz -C quiz-ai
 ```
 
-4. Install Dependencies
+2. Add execution permission to the setup
 
 ```bash
-pip install -r requirements.txt
+cd quiz-ai
+chmod +x setup.sh
 ```
 
-5. Run the application
-
+3. Then run the application:
+   
 ```bash
-python3 app.py
+./setup.sh
 ```
-
 </details>
 
 <details>
 <summary>Windows</summary>
 
-**Important note:** you **MUST** install Visual Studio with the "Desktop development with C++" workload, you can download it from the [link](https://visualstudio.microsoft.com/vs/older-downloads/) (choose the community edition).
-
-During installation do not forget to select "Desktop development with C++", and ensure these components are checked:
-
-* MSVC latest version
-* Windows 11 SDK
-* MSVC v143
-* C++ CMAKE tools for Windows
-
-**After installing Visual Studio run these commands:**
-
-3. Create a Virtual Environment
-
-```cmd
-python -m venv venv
-venv\Scripts\activate
-```
-
-4. Install Dependencies
-
-```cmd
-pip install -r requirements.txt
-```
-
-5. Run the application
-
-```cmd
-python app.py
-```
+- Unzip the file -> Double-click on `setup.bat`.
 
 </details>
 
-## Boost the performance
-By default, the LLM runs on your CPU. You can adjust the number of threads for better performance.
+While script is running, it'll display some options for runtime:
 
-1. Open quiz_flask/LLM.py.
-2. Find the Llama model initialization.
-3. Change the `n_threads` parameter to match your CPU's physical core count.
+|Option|Backend|Best For...|
+| --- | --- | --- |
+|1|Nvidia (CUDA)|Users with Nvidia GPUs and CUDA installed.|
+|2|Universal (Vulkan)|Modern GPUs without specific drivers (Intel/AMD/Nvidia).|
+|3|CPU (OpenBLAS)|Older hardware or systems without a dedicated GPU.|
+|4|hipBLAS (ROCm)|AMD GPU users with ROCm installed.|
+|5|Native|Default installation without specific optimizations.|
 
-```python
-llm = Llama(
-    model_path=path,
-    n_ctx=4096,
-    n_threads=4, # number of threads
-    chat_format="qwen"
-)
+**Then You must wait until all packages and the AI model download.**
+
+## Change runtime and tensor type on `settings.json`
+
+If you want to switch the compilation process between CPU and GPU, navigate to quiz-ai/quiz-flask, and you'll find settings.json.
+
+```json
+{
+  "GPU": "1",
+  "type": "q4"
+}
 ```
 
-#### Using GPU (Faster Inference)
-For GPU acceleration, you need to reinstall llama-cpp-python with GPU support.
-For more information, you can visit this [repository](https://github.com/abetlen/llama-cpp-python). 
+- GPU: `0` for CPU, `1` for GPU acceleration.
+
+- Type: `q4` (Fast/Standard) or `f16` (High accuracy/Heavy).
+
+**Note**: Switching to `f16` triggers a ~3GB download.
 
 ## Google Colab
 The application uses a quantized language model via llama.cpp. For details on the fine-tuning process and model selection, you can explore [my Google Colab notebook](https://colab.research.google.com/drive/1CXJJoTeSN71NmqeW_F8kNY4EcpuGGScp?usp=sharing).
 
+[Update] The new notebook that was used in the [recent update](https://colab.research.google.com/drive/1avIlszTztDYCw4isqdu3lhdTv9ADnB0G?usp=sharing).
 
 ## Troubleshooting
-"Failed to build llama-cpp-python": Ensure your C compiler (Visual Studio on Windows, Xcode on macOS, gcc on Linux) is correctly installed.
-
-ModuleNotFoundError: Ensure your virtual environment is activated and you ran pip install -r requirements.txt.
+"The server did not respond": Double-check that your script (.sh or .bat) is running; as you close the terminal, the application will not work.
 
 AI gives bad result: Double-check that your document matches the 'Good Format Example' above. The AI relies on consistent structure to read your data accurately
 
