@@ -8,7 +8,7 @@ https://github.com/user-attachments/assets/a4ef3816-f859-40b2-8ad8-a8e7da1e3203
 
 **Features:**
 *   Upload `.docx` or `.txt` files with MCQs.
-*   Local AI processing (runs privately on your CPU).
+*   Local AI processing.
 *   Simple web interface built with Flask.
 *   Performance tuning for your hardware.
 *   **Document History:** All parsed quizzes are automatically saved for future review
