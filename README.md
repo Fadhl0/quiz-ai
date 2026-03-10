@@ -56,7 +56,8 @@ For example: if **Linux** download `quiz_linux.tar.gz`, if **Windows** download 
 1. Unzip the file:
    
 ```bash
-tar -xf quiz_linux.tar.gz -C quiz-ai
+mkdir quiz-ai
+tar -xvf quiz_linux.tar.gz -C quiz-ai/
 ```
 
 2. Add execution permission to the setup
