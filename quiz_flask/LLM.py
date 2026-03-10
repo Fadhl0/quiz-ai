@@ -5,6 +5,7 @@ import gc
 import os
 import json_schema
 import json
+import re
 
 def parse_json(text):
   try:
@@ -82,6 +83,7 @@ def generate_resp(MCQList, SYS_PROMPT):
     llm = load_model()
 
     for msg in MCQList:
+      msg = re.sub(r"\n", " \n ", msg)
       try:
         messages = [
           {"role": "system", "content": SYS_PROMPT},
