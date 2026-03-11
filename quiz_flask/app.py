@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, send_from_directory
+from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 import os
 from werkzeug.utils import secure_filename
@@ -9,8 +9,20 @@ import json
 import webbrowser
 from threading import Timer
 
-app = Flask(__name__, static_folder='../quiz_vite/dist', static_url_path='')
-cors = CORS(app)
+port = 8412
+
+app = Flask(
+  __name__, 
+  static_folder='../quiz_vite/dist',
+  static_url_path='/',
+  template_folder='../quiz_vite/dist'
+)
+CORS(app)
+
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def catch_all(path):
+  return render_template("index.html")
 
 UPLOAD_FOLDER = os.path.abspath("uploads")
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -149,22 +161,10 @@ def upload():
   else:
     return jsonify(success=True, content="")
 
-@app.route('/<path:path>')
-def static_proxy(path):
-  file_path = os.path.join(app.static_folder, path)
-  if os.path.exists(file_path):
-    return send_from_directory(app.static_folder, path)
-  return send_from_directory(app.static_folder, 'index.html')
-
-@app.route('/')
-def serve():
-  return send_from_directory(app.static_folder, 'index.html')
-
 def open_browser():
-  webbrowser.open("http://127.0.0.1:8412")
+  webbrowser.open(f"http://127.0.0.1:{port}")
 
 if __name__ == "__main__":
   if not os.environ.get("WERKZEUG_RUN_MAIN"):
     Timer(1.5, open_browser).start()
-  app.run(debug=True, port=8412)
-
+  app.run(port=port)
